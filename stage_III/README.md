@@ -49,7 +49,7 @@ You can use `python train.py --help` to see the meaning of other options.
 
 
 
-If you want to use our pretrained models, download it from (link), and unzip it to `./pix2pix/checkpoints/brightfield2fluorescence/latest_net_G.pth` and `.../latest_net_D.pth`. 
+If you want to use our pretrained models, download it from (https://drive.google.com/file/d/1JqZQfDAh43lne4IU9zKqtHl5bgsuKzEW/view?usp=sharing), and unzip it to `./pix2pix/checkpoints/brightfield2fluorescence/latest_net_G.pth`. 
 
 
 
