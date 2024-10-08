@@ -12,7 +12,7 @@ At the training stage, the ResNeSt-101 network learns to classify bright-field i
 
 ## Datasets
 
-Download the dataset from https://drive.google.com/file/d/1qp-k7KTAIALaYPFzaJlX_E8elTVBiOU5/view?usp=share_link, and unzip it at `./data/`. The dataset contains 141 pairs of whole-well bright-field images at day 6 and manually labeled masks where the training set and the test set contain 106 and 35 pairs, respectively. The corresponding cTnT fluorescence results for the test images are also provided.  The training and test images are randomly selected from 6 cell lines. For more information, please refer to [dataset_information](./data/dataset_information.md).
+Download the dataset from https://drive.google.com/file/d/13vZdxyhSePhgeLB1ogCOqtdG98jxSszA/view?usp=sharing, and unzip it at `./data/`. The dataset contains 141 pairs of whole-well bright-field images at day 6 and manually labeled masks where the training set and the test set contain 106 and 35 pairs, respectively. The corresponding cTnT fluorescence results for the test images are also provided.  The training and test images are randomly selected from 6 cell lines. For more information, please refer to [dataset_information](./data/dataset_information.md).
 
 
 
