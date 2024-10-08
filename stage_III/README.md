@@ -49,6 +49,10 @@ You can use `python train.py --help` to see the meaning of other options.
 
 
 
+**Use visdom to visualize the training process.** You may use visdom to visualize the loss curve and example generated images during training. Just run `visdom` in the command line window, open links `localhost:8097` in a web browser. By default 8097 is the visdom port number, which can be set by option `--display_port`.
+
+
+
 If you want to use our pretrained models, download it from (https://drive.google.com/file/d/1JqZQfDAh43lne4IU9zKqtHl5bgsuKzEW/view?usp=sharing), and unzip it to `./pix2pix/checkpoints/brightfield2fluorescence/latest_net_G.pth`. 
 
 
