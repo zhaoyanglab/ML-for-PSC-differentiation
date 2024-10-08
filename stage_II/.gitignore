@@ -1,0 +1,9 @@
+img_result/*
+img_result_wholewell/heatmap/*
+resnest101/weight/*
+data/Train/*
+data/Train_crop/*
+data/Test/*
+data/Test_crop/*
+**/__pycache__
+
