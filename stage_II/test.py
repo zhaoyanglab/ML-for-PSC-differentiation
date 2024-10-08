@@ -36,45 +36,32 @@ args = parser.parse_args()
 config = load_yaml(args.config_path, args)
 
 
-def val_epoch(model, loader, mel_idx, get_output=False):
+def test_epoch(model, loader, mel_idx, get_output=False):
 
     model.eval()
-    val_loss = []
-    LOGITS = []
     PROBS = []
     TARGETS = []
     with torch.no_grad():
         for (data, target) in tqdm(loader):
             
             data, target = data.to(device), target.to(device)
-            logits = torch.zeros((data.shape[0], int(config["out_dim"]))).to(device)  
-            # probs = torch.zeros((data.shape[0], int(config["out_dim"]))).to(device)
             probs = model(data)
 
-            LOGITS.append(logits.detach().cpu())
             PROBS.append(probs.detach().cpu())
             TARGETS.append(target.detach().cpu())
 
-            loss = Loss(out_dim=int(config["out_dim"]), loss_type=config["loss_type"])(model, data, target, mixup_cutmix=False)
-            val_loss.append(loss.detach().cpu().numpy())
-
-    val_loss = np.mean(val_loss)
-    LOGITS = torch.cat(LOGITS).numpy()
     PROBS = torch.cat(PROBS).numpy()
     TARGETS = torch.cat(TARGETS).numpy()
 
-    if get_output:
-        return LOGITS, PROBS
-    else:
-        acc = (PROBS.argmax(1) == TARGETS).mean()
-        auc = roc_auc_score((TARGETS == mel_idx).astype(float), PROBS[:, mel_idx])
-        return val_loss, acc, auc, PROBS.argmax(1)
-
-
+    # note: since the model only train for classifying positive (1) and negative (0),
+    # samples with uncertain label (2) are discarded when evaluating the classification performance
+    acc = (PROBS.argmax(1) == TARGETS)[TARGETS != 2].mean()
+    auc = roc_auc_score((TARGETS[TARGETS != 2] == mel_idx).astype(float), PROBS[TARGETS != 2, mel_idx])
+    return acc, auc, PROBS.argmax(1)
 
 def main():
 
-    df, df_test, mel_idx = get_df( config["data_dir"], config["auc_index"]  )   
+    df_test, mel_idx = get_df( config["data_dir"], config["auc_index"] , stage = 'test') 
 
     _, transforms_val = get_transforms(int(config["image_size"]))   
 
@@ -85,10 +72,8 @@ def main():
 
         # df_valid = df[df['fold'] == fold]
 
-    df_valid = df_test
-
-    dataset_valid = QDDataset(df_valid, 'valid', transform=transforms_val)
-    valid_loader = torch.utils.data.DataLoader(dataset_valid, batch_size=int(config["batch_size"]), num_workers=int(config["num_workers"]),drop_last=False)
+    dataset_test = QDDataset(df_test, 'valid', transform=transforms_val)
+    test_loader = torch.utils.data.DataLoader(dataset_test, batch_size=int(config["batch_size"]), num_workers=int(config["num_workers"]),drop_last=False)
 
     if config["eval"] == 'best':
         model_file = os.path.join(config["model_dir"], f'best_fold.pth')
@@ -120,8 +105,7 @@ def main():
     # PROBS.append(this_PROBS)
     # dfs.append(df_valid)
 
-
-    val_loss, acc, auc, pred_target = val_epoch(model, valid_loader, mel_idx)
+    acc, auc, pred_target = test_epoch(model, test_loader, mel_idx)
 
     # dfs = pd.concat(dfs).reset_index(drop=True)
     # dfs['pred'] = np.concatenate(PROBS).squeeze()[:, mel_idx]

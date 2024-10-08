@@ -1,14 +1,14 @@
 # -*- coding:utf-8 -*-
 
 import os
-import apex
+#import apex
 import time
 import random
 import argparse
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-from apex import amp
+#from apex import amp
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold
 import torch
@@ -60,11 +60,11 @@ def train_epoch(model, loader, optimizer):
 
         loss = Loss(out_dim=int(config["out_dim"]), loss_type=config["loss_type"])(model, data, target, mixup_cutmix=config["mixup_cutmix"])
 
-        if not config["use_amp"]:
-            loss.backward()
-        else:
-            with amp.scale_loss(loss, optimizer) as scaled_loss:
-                scaled_loss.backward()
+        #if not config["use_amp"]:
+        loss.backward()
+        # else:
+        #     with amp.scale_loss(loss, optimizer) as scaled_loss:
+        #         scaled_loss.backward()
 
         if int(config["image_size"]) in [896,576]:
             torch.nn.utils.clip_grad_norm_(model.parameters(), 0.5)
@@ -141,8 +141,8 @@ def run(df, transforms_train, transforms_val, mel_idx):
     # model.load_state_dict(torch.load(model_file), strict=True)
 
 
-    if DP:
-        model = apex.parallel.convert_syncbn_model(model)
+    # if DP:
+    #     model = apex.parallel.convert_syncbn_model(model)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
@@ -153,15 +153,16 @@ def run(df, transforms_train, transforms_val, mel_idx):
     model_file3 = os.path.join(config["model_dir"], f'final_fold.pth')
 
     optimizer = optim.Adam(model.parameters(), lr=float(config["init_lr"]))
-    if config["use_amp"]: 
-        model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
-    if DP:
-        model = nn.DataParallel(model)
+    # if config["use_amp"]: 
+    #     model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
+    # if DP:
+    #     model = nn.DataParallel(model)
     #scheduler_cosine = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, int(config["n_epochs"]) - 1) 
     scheduler_cosine = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, int(config["n_epochs"]) - 1) 
     scheduler_warmup = GradualWarmupSchedulerV2(optimizer, multiplier=10, total_epoch=1, after_scheduler=scheduler_cosine)
     
-    print(len(dataset_train), len(dataset_valid))
+    print("Training size = ", len(dataset_train))
+    print("Validation size =", len(dataset_valid))
 
     for epoch in range(1, int(config["n_epochs"]) + 1): 
         print(time.ctime(), f'Epoch {epoch}')
@@ -193,7 +194,7 @@ def run(df, transforms_train, transforms_val, mel_idx):
 
 def main():
 
-    df, df_test, mel_idx = get_df( config["data_dir"], config["auc_index"]  )
+    df, mel_idx = get_df( config["data_dir"], config["auc_index"], stage = 'train')
 
     transforms_train, transforms_val = get_transforms(config["image_size"])  
 
